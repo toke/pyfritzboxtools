@@ -10,10 +10,12 @@ status via ftp is implemented.
 ```
 from FritzboxMailbox import MailboxReader, FtpReader
 
-fbftp = FtpReader(host='fritz.home.kerpe.net', use_netrc=True)
+fbftp = FtpReader(host='fritz.box', use_netrc=True)
 fbftp.connect()
 
+
 mbf = fbftp
+# Alternative use local file
 #mbf = io.open('meta0', 'rb')
 
 mb = MailboxReader(mbf)
