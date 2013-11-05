@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import md5
-import httplib, urllib
+from md5 import md5
+from httplib import HTTPConnection
+from urllib import urlencode
 from netrc import netrc
 import xml.etree.ElementTree as ET
 
@@ -42,7 +43,7 @@ class FritzBoxWeb(object):
     @classmethod
     def calculate_challenge_response(cls, challenge, password):
         response_encoded = (u'%s-%s'% (challenge, password)).encode('utf-16LE')
-        response_hash    = md5.md5(response_encoded).hexdigest()
+        response_hash    = md5(response_encoded).hexdigest()
         return u'%s-%s' % (challenge, response_hash)
 
     def get_challenge(self):
@@ -51,7 +52,6 @@ class FritzBoxWeb(object):
             conn.request("GET", '/login_sid.lua')
             r1 = conn.getresponse()
             if r1.status == 200:
-                print "debug:", r1.status, r1.reason
                 data = r1.read()
         except:
             raise CommunicationError('Could not connect to Fritzbox')
@@ -72,7 +72,7 @@ class FritzBoxWeb(object):
         response = FritzBoxWeb.calculate_challenge_response(challenge, password)
         headers = {"Content-type": "application/x-www-form-urlencoded",
             "Accept": "text/plain"}
-        params = urllib.urlencode({'user': user, 'response': response})
+        params = urlencode({'user': user, 'response': response})
         conn.request("POST", '/login_sid.lua', params, headers)
         r1 = conn.getresponse()
         response_xml = r1.read()
@@ -89,15 +89,15 @@ if __name__ == '__main__':
     fb = FritzBoxWeb(host)
     fb.login(user, password)
 
-    print fb.session_id
+    print(fb.session_id)
 
     conn = fb.connect()
     conn.request("GET", '/home/home.lua?sid=%s' % fb.session_id)
 
     r = conn.getresponse()
-    print r.read()
+    print(r.read())
 
-    print fb.session_id
+    print(fb.session_id)
     #fb2 = FritzBox()
     #print fb2.get_challenge()
     #print fb.login(user, "123")
