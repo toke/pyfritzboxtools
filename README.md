@@ -12,7 +12,7 @@ from FritzboxMailbox import MailboxReader, FtpReader
 
 fbftp = FtpReader(host='fritz.box', use_netrc=True)
 fbftp.connect()
-
+fbftp.read_file('meta0')
 
 mbf = fbftp
 # Alternative use local file

@@ -28,8 +28,8 @@ class MailboxItem(object):
     formatstring = '>Ib3x6I 20x 16s 56x 15s 17x 80s 48x 5B 31x 24sI' 
 
     def __init__(self, data):
-        self.data = data
-        self.encoding = 'latin-1'
+        self.data       = data
+        self.encoding   = 'latin-1'
         self.raw_data   = self.unpack(data)
 
     def __str__(self):
@@ -133,15 +133,15 @@ class FtpReader(BytesIO):
     """
     __slots__ = ['host', 'user', 'password', 'basepath', 'filename', 'data']
 
-    def __init__(self, host='fritz.box', user='', password='', basepath='voicebox', filename='meta0', use_netrc=True):
-        self.host   = host
+    def __init__(self, host='fritz.box', user='', password='', use_netrc=True, basepath='voicebox'):
+        self.host       = host
         self.use_netrc  = use_netrc
-        self.user   = user
-        self.password = password
-        self.basepath = basepath
+        self.user       = user
+        self.password   = password
+        self.basepath   = basepath
+        self.filename   = None
+        self.data       = None
         self._netrc_credentials()
-        self.filename = filename
-        self.data   = None
         super(FtpReader, self).__init__()
 
     def _netrc_credentials(self):
@@ -159,9 +159,19 @@ class FtpReader(BytesIO):
         except (Exception, e):
             raise FtpReaderException('could not connect to host: ' + str(e))
         self._conn.login(self.user, self.password)
-        self._conn.cwd(self.basepath)
+        if self.basepath:
+            self._conn.cwd(self.basepath)
+       
+    def read_file(self, filename='meta0', path=None):
+        if not self._conn:
+            raise FtpReaderException('Not connected')
+        self.filename = filename
+        if path:
+            self._conn.cwd(self.path)
         self._conn.retrbinary ('RETR '+ self.filename, self.write)
         self.seek(0)
+
+    def close(self):
         self._conn.quit()
 
 
@@ -169,6 +179,7 @@ if __name__ == '__main__':
 
     fbftp = FtpReader(host='fritz.home.kerpe.net', use_netrc=True)
     fbftp.connect()
+    fbftp.read_file('meta0')
     
     mbf = fbftp
     #mbf = io.open('meta0', 'rb')
@@ -182,3 +193,5 @@ if __name__ == '__main__':
             else:
                 flag = '- '
             print(flag + str(record))
+
+
