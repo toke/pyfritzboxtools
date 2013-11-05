@@ -8,17 +8,31 @@ from struct import Struct
 from ftplib import FTP
 from netrc import netrc
 
+
+class Helper(object):
+
+    @classmethod
+    def nonull(cls, line):
+        return str(line.split('\x00')[0])
+
+
+class FormatException(Exception):
+    def __init__(self, message, *args, **kwargs):
+        self.message = message
+        super(FormatException, self).__init__(message, *args, **kwargs)
+
+
 class MailboxRecordingFile(object):
 
-    __slots__ = ['file_name', 'full_path', 'file_size']
+    __slots__ = ['filename', 'full_path', 'file_size']
 
-    def __init__(self, file_name=None, file_size=None, file_path=None):
-        self.file_name  = file_name
+    def __init__(self, filename=None, file_size=None, file_path=None):
+        self.filename  = filename
         self.full_path  = file_path
         self.file_size  = file_size
 
     def __str__(self):
-        return self.file_name
+        return self.filename
 
 
 class MailboxItem(object):
@@ -31,6 +45,8 @@ class MailboxItem(object):
         self.data       = data
         self.encoding   = 'latin-1'
         self.raw_data   = self.unpack(data)
+        if self.ident != 348:
+            raise FormatException('Unknown format identifier: %d' % self.ident)
 
     def __str__(self):
         return u'{0}\t{1}\t{2}\t{3}s\t{4}'.format(self.call_time, self.caller_number, self.number, self.duration, self.recording)
@@ -46,6 +62,10 @@ class MailboxItem(object):
     @classmethod
     def size(cls):
         return cls.struct().size
+
+    @property
+    def ident(self):
+        return self.raw_data[0]
 
     @property
     def seq(self):
@@ -68,11 +88,11 @@ class MailboxItem(object):
 
     @property
     def caller_number(self):
-        return self.raw_data[8].decode(self.encoding)
+        return Helper.nonull(self.raw_data[8]).decode(self.encoding)
 
     @property
     def number(self):
-        return self.raw_data[16].decode(self.encoding)
+        return Helper.nonull(self.raw_data[16]).decode(self.encoding)
 
     @property
     def call_time(self):
@@ -83,8 +103,8 @@ class MailboxItem(object):
     @property
     def recording(self):
         mrf = MailboxRecordingFile()
-        mrf.file_name  = self.raw_data[9].decode(self.encoding)
-        mrf.full_path  = self.raw_data[10].decode(self.encoding)
+        mrf.filename  = Helper.nonull(self.raw_data[9]).decode(self.encoding)
+        mrf.full_path  = Helper.nonull(self.raw_data[10]).decode(self.encoding)
         mrf.file_size  = self.raw_data[4]
         return mrf
 
@@ -167,8 +187,9 @@ class FtpReader(BytesIO):
             raise FtpReaderException('Not connected')
         self.filename = filename
         if path:
-            self._conn.cwd(self.path)
-        self._conn.retrbinary ('RETR '+ self.filename, self.write)
+            self._conn.cwd(path)
+        self._conn.retrbinary ('RETR '+ self.filename , self.write)
+        self.flush()
         self.seek(0)
 
     def close(self):
