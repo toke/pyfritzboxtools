@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+    Implementation of the new FritzBox Hash-Authentication
+    No error handling
+"""
+
 from md5 import md5
 from httplib import HTTPConnection
 from urllib import urlencode
@@ -92,7 +97,7 @@ if __name__ == '__main__':
     print(fb.session_id)
 
     conn = fb.connect()
-    conn.request("GET", '/home/home.lua?sid=%s' % fb.session_id)
+    conn.request("GET", '/home/home.lua?sid={session_id}'.format(session_id=fb.session_id))
 
     r = conn.getresponse()
     print(r.read())

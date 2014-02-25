@@ -49,7 +49,8 @@ class MailboxItem(object):
             raise FormatException('Unknown format identifier: %d' % self.ident)
 
     def __str__(self):
-        return u'{0}\t{1}\t{2}\t{3}s\t{4}'.format(self.call_time, self.caller_number, self.number, self.duration, self.recording)
+        return u'{time}\t{caller}\t{number}\t{duration}s\t{file}'.format(time=self.call_time, caller=self.caller_number,
+        number=self.number, duration=self.duration, file=self.recording.filename)
 
     @classmethod
     def struct(cls):
@@ -214,5 +215,6 @@ if __name__ == '__main__':
             else:
                 flag = '- '
             print(flag + str(record))
+            print record.dump()
 
 
