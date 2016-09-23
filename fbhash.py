@@ -4,10 +4,18 @@
     Implementation of the new FritzBox Hash-Authentication
     No error handling
 """
-
-from md5 import md5
-from httplib import HTTPConnection
-from urllib import urlencode
+try:
+    from md5 import md5
+except ImportError:
+    from hashlib import md5
+try:
+    from httplib import HTTPConnection
+except ImportError:
+    from http.client import HTTPConnection
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 from netrc import netrc
 import xml.etree.ElementTree as ET
 
@@ -38,7 +46,7 @@ class FritzBoxWeb(object):
 
     def connect(self):
         if not self._connection:
-            self._connection = httplib.HTTPConnection(self.host)
+            self._connection = HTTPConnection(self.host)
         return self._connection
 
     def login(self, user, password):
