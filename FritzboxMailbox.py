@@ -199,7 +199,7 @@ class FtpReader(BytesIO):
 
 if __name__ == '__main__':
 
-    fbftp = FtpReader(host='fritz.home.kerpe.net', use_netrc=True)
+    fbftp = FtpReader(host='192.168.178.1', use_netrc=True)
     fbftp.connect()
     fbftp.read_file('meta0')
     
@@ -215,6 +215,6 @@ if __name__ == '__main__':
             else:
                 flag = '- '
             print(flag + str(record))
-            print record.dump()
+            print(record.dump())
 
 

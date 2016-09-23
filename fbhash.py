@@ -86,7 +86,7 @@ class FritzBoxWeb(object):
 
 
 if __name__ == '__main__':
-    host = 'fritz.home.kerpe.net'
+    host = '192.168.178.1'
     
     nrc = netrc()
     (user, account, password)  = nrc.authenticators(host)
